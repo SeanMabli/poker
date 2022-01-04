@@ -30,39 +30,87 @@ pot = 0
 playerfold = np.full(len(playernames), False, dtype=bool)
 
 # dealing cards to players and dealer
-for i in range(len(playernames)):
-  for j in range(2):
-    playercards[i, j] = deck[0]
+while True:
+  for i in range(len(playernames)):
+    for j in range(2):
+      playercards[i, j] = deck[0]
+      deck = deck[1:]
+
+  for i in range(5):
+    dealercards[i] = deck[0]
     deck = deck[1:]
 
-for i in range(5):
-  dealercards[i] = deck[0]
-  deck = deck[1:]
+  # initial round of betting
+  while all(element == aliveplayerbets[0] for element in aliveplayerbets) == False and any(playerfold == False) == True:
+    for i in range(len(playernames)):
+      if playerfold[i] == False:
+        input('start ' + playernames[i] + "'s turn")
+        print('cards: ' + playercards[i, 0, 0] + playercards[i, 0, 1] + ', ' + playercards[i, 1, 0] + playercards[i, 1, 1])
+        print('cash: ' + str(playercash[i]))
+        print('minimum bet: ' + str(minbet))
+        print('current bet: ' + str(playerbets[i]))
+        y = input('(b)et, (c)all, or (f)old: ').lower()
+        if y == 'b' or y == 'bet':
+          x = int(input('bet: '))
+          playerbets[i] = minbet = x if minbet < x < playercash[i] else 0
+        elif y == 'c' or y == 'call':
+          playerbets[i] = minbet
+        elif y == 'f' or y == 'fold':
+          playerfold[i] = True
+        os.system('clear')
+        
+      if np.sum(playerfold) == len(playernames) - 1:
+        os.system('clear')
+        playercash[playerfold.tolist().index(False)] += np.sum(playerbets)
+        playerbets = np.zeros(playernames.shape, dtype=int)
+        playerfold = np.full(len(playernames), True, dtype=bool)
+        break
 
-while all(element == aliveplayerbets[0] for element in aliveplayerbets) == False and any(playerfold == False) == True:
-  for i in range(len(playernames)):
-    if playerfold[i] == False:
-      input('start ' + playernames[i] + "'s turn")
-      print('cards: ' + playercards[i, 0, 0] + playercards[i, 0, 1] + ', ' + playercards[i, 1, 0] + playercards[i, 1, 1])
-      print('cash: ' + str(playercash[i]))
-      print('minimum bet: ' + str(minbet))
-      print('current bet: ' + str(playerbets[i]))
-      y = input('(b)et, (c)all, or (f)old: ').lower()
-      if y == 'b' or y == 'bet':
-        x = int(input('bet: '))
-        playerbets[i] = minbet = x if minbet < x < playercash[i] else 0
-      elif y == 'c' or y == 'call':
-        playerbets[i] = minbet
-      elif y == 'f' or y == 'fold':
-        playerfold[i] = True
-      os.system('clear')
+    aliveplayerbets = playerbets
+    for i in range(len(playernames)):
+      if playerfold[i] == True:
+        aliveplayerbets = np.delete(aliveplayerbets, i)
 
-  aliveplayerbets = playerbets
-  for i in range(len(playernames)):
-    if playerfold[i] == True:
-      np.delete(aliveplayerbets, i)
+  pot += np.sum(playerbets)
+  playerbets = np.zeros(playernames.shape, dtype=int)
 
-pot = np.sum(playerbets)
-playerbets = np.zeros(playernames.shape, dtype=int)
+  # flop
+  loop = False
+  while (all(element == aliveplayerbets[0] for element in aliveplayerbets) == False and any(playerfold == False) == True) or loop == False:
+    for i in range(len(playernames)):
+      if playerfold[i] == False:
+        input('start ' + playernames[i] + "'s turn")
+        print('cards: ' + playercards[i, 0, 0] + playercards[i, 0, 1] + ', ' + playercards[i, 1, 0] + playercards[i, 1, 1])
+        print('flop: ' + dealercards[0, 0] + dealercards[0, 1] + ', ' + dealercards[1, 0] + dealercards[1, 1] + ', ' + dealercards[2, 0] + dealercards[2, 1])
+        print('cash: ' + str(playercash[i]))
+        print('minimum bet: ' + str(minbet))
+        print('current bet: ' + str(playerbets[i]))
+        y = input('(b)et, (c)all, or (f)old: ').lower()
+        if y == 'b' or y == 'bet':
+          x = int(input('bet: '))
+          playerbets[i] = minbet = x if minbet < x < playercash[i] else 0
+        elif y == 'c' or y == 'call':
+          playerbets[i] = minbet
+        elif y == 'f' or y == 'fold':
+          playerfold[i] = True
+        os.system('clear')
+        
+      if np.sum(playerfold) == len(playernames) - 1:
+        os.system('clear')
+        playercash[playerfold.tolist().index(False)] += np.sum(playerbets)
+        playerbets = np.zeros(playernames.shape, dtype=int)
+        playerfold = np.full(len(playernames), True, dtype=bool)
+        break
 
-print(pot)
+    aliveplayerbets = playerbets
+    for i in range(len(playernames)):
+      if playerfold[i] == True:
+        aliveplayerbets = np.delete(aliveplayerbets, i)
+    
+    loop = True
+
+  pot += np.sum(playerbets)
+  playerbets = np.zeros(playernames.shape, dtype=int)
+
+  print(playercash, pot)
+  break
