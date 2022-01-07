@@ -13,7 +13,7 @@ np.random.shuffle(deck)
 input('use enter to advance through the game')
 os.system('clear')
 
-playernames = np.array(['zain', 'adam', 'sean']) # np.array(input("enter player names (seprated by comma's): ").strip().lower().split(','))
+playernames = np.array(['zain', 'adam']) # np.array(input("enter player names (seprated by comma's): ").strip().lower().split(','))
 os.system('clear')
 
 smallblind = 1 # int(input('small blind: '))
@@ -98,25 +98,31 @@ while True:
     pot += np.sum(playerbets)       
     playerbets = np.zeros(playernames.shape, dtype=int)
 
-  # Check for royal flush
+  for i in range(len(playernames)):
+    combinedcards = np.vstack((playercards[i], dealercards))
 
-  # Check for straight flush
+    print(combinedcards)
 
-  # Check for 4 of a kind
+    if any([combinedcards[:, 1].tolist().count(i) >= 5 for i in ['C', 'D', 'H', 'S']]):
+      print('flush')
+      # 0, royal flush
+      # 1, straight flush
+      # 4, flush
 
-  # Check for full house
+    if any([combinedcards[:, 0].tolist().count(i) >= 4 for i in ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K']]):
+      print('4 of a kind') # 2
 
-  # Check for flush
+    if any([combinedcards[:, 0].tolist().count(i) >= 3 for i in ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K']]):
+      print('3 of a kind') # 6
 
-  # Check for straight
+    if np.sum([combinedcards[:, 0].tolist().count(i) >= 2 for i in ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K']]) == 2:
+      print('2 pair') # 7
 
-  # Check for 3 of a kind
+    elif any([combinedcards[:, 0].tolist().count(i) >= 2 for i in ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K']]):
+      print('pair') # 8
 
-  # Check for 2 pair
-
-  # Check for 1 pair
-
-  # Check for high card
+    # 3, Check for full house
+    # 9, Check for high card
 
   print(playercash)
   gamenum += 1
