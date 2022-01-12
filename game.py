@@ -36,7 +36,10 @@ while True:
 
   for i in range(len(playernames)):
     for j in range(2):
+      print(deck[0], i, j)
       playercards[i, j] = deck[0]
+      print(deck[0])
+      print(playercards[i, j])
       deck = deck[1:]
 
   for i in range(5):
@@ -49,6 +52,7 @@ while True:
       for i in range(len(playernames)):
         if playerfold[i] == False:
           input('start ' + playernames[i] + "'s turn")
+          print(playercards[i])
           print('cards: ' + playercards[i, 0, 0] + playercards[i, 0, 1] + ', ' + playercards[i, 1, 0] + playercards[i, 1, 1])
           if round == 1:
             print('flop: ' + dealercards[0, 0] + dealercards[0, 1] + ', ' + dealercards[1, 0] + dealercards[1, 1] + ', ' + dealercards[2, 0] + dealercards[2, 1])
@@ -62,7 +66,7 @@ while True:
           y = input('(b)et, (c)all, or (f)old: ').lower()
           if y == 'b' or y == 'bet':
             x = int(input('bet: '))
-            minbet = x if minbet < x < playercash[i] else 0
+            minbet = x
             playerbets[i] += minbet
             playercash[i] -= minbet
           elif y == 'c' or y == 'call':
