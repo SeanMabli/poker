@@ -2,18 +2,18 @@ import numpy as np
 import os
 
 input('use enter to advance through the game')
-os.system('cls')
+os.system('clear')
 
-playernames = np.array(['zain', 'adam']) # np.array(input("enter player names (seprated by comma's): ").strip().lower().split(','))
-os.system('cls')
+playernames = np.array(input("enter player names (seprated by comma's): ").strip().lower().split(','))
+os.system('clear')
 
-smallblind = 1 # int(input('small blind: '))
+smallblind = int(input('small blind: '))
 blind = np.array([smallblind, smallblind * 2])
-os.system('cls')
+os.system('clear')
 
-cash = 200 # int(input('player starting cash: '))
+cash = int(input('player starting cash: '))
 playercash = np.array([cash] * len(playernames))
-os.system('cls')
+os.system('clear')
 
 playercards = np.empty([len(playernames), 2, 2], str)
 dealercards = np.empty([5, 2], str)
@@ -70,10 +70,10 @@ while True:
             playerbets[i] = minbet
           elif y == 'f' or y == 'fold':
             playerfold[i] = True
-          os.system('cls')
+          os.system('clear')
 
         if np.sum(playerfold) == len(playernames) - 1:
-          os.system('cls')
+          os.system('clear')
           break
 
       loop = True
@@ -103,5 +103,5 @@ while True:
   for i, player in enumerate(playernames):
     print(player + "'s cash: " + str(playercash[i]))
   input('press enter to continue to next game')
-  os.system('cls')
+  os.system('clear')
   gamenum += 1
