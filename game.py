@@ -2,25 +2,24 @@ import numpy as np
 import os
 
 input('use enter to advance through the game')
-os.system('clear')
+os.system('cls')
 
 playernames = np.array(input("enter player names (seprated by comma's): ").strip().lower().split(','))
-os.system('clear')
+os.system('cls')
 
 smallblind = int(input('small blind: '))
 blind = np.array([smallblind, smallblind * 2])
-os.system('clear')
+os.system('cls')
 
 cash = int(input('player starting cash: '))
 playercash = np.array([cash] * len(playernames))
-os.system('clear')
+os.system('cls')
 
-playercards = np.empty([len(playernames), 2, 2], str)
-dealercards = np.empty([5, 2], str)
+playercards = np.full([len(playernames), 2, 2], '', dtype='<U10')
+dealercards = np.full([5, 2], '')
 
 gamenum = 0
 while True:
-  
   playerbets = np.zeros(playernames.shape, dtype=int)
   playerbets[0], playerbets[1] = blind[0], blind[1]
   aliveplayerbets = playerbets
@@ -36,10 +35,7 @@ while True:
 
   for i in range(len(playernames)):
     for j in range(2):
-      print(deck[0], i, j)
       playercards[i, j] = deck[0]
-      print(deck[0])
-      print(playercards[i, j])
       deck = deck[1:]
 
   for i in range(5):
@@ -52,7 +48,6 @@ while True:
       for i in range(len(playernames)):
         if playerfold[i] == False:
           input('start ' + playernames[i] + "'s turn")
-          print(playercards[i])
           print('cards: ' + playercards[i, 0, 0] + playercards[i, 0, 1] + ', ' + playercards[i, 1, 0] + playercards[i, 1, 1])
           if round == 1:
             print('flop: ' + dealercards[0, 0] + dealercards[0, 1] + ', ' + dealercards[1, 0] + dealercards[1, 1] + ', ' + dealercards[2, 0] + dealercards[2, 1])
@@ -74,10 +69,10 @@ while True:
             playerbets[i] = minbet
           elif y == 'f' or y == 'fold':
             playerfold[i] = True
-          os.system('clear')
+          os.system('cls')
 
         if np.sum(playerfold) == len(playernames) - 1:
-          os.system('clear')
+          os.system('cls')
           break
 
       loop = True
@@ -107,5 +102,5 @@ while True:
   for i, player in enumerate(playernames):
     print(player + "'s cash: " + str(playercash[i]))
   input('press enter to continue to next game')
-  os.system('clear')
+  os.system('cls')
   gamenum += 1
