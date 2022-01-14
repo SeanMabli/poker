@@ -18,8 +18,9 @@ callbox = pygame.Rect(10, 240, 150, 32)
 foldbox = pygame.Rect(10, 280, 150, 32)
 nextbox = pygame.Rect(10, 320, 150, 32)
 nextgamebox = pygame.Rect(200, 10, 150, 32)
+whowonbox = pygame.Rect(200, 360, 150, 32)
 
-active = [False for _ in range(15)]
+active = [False for _ in range(16)]
 screen = 'start'
 done = False
 
@@ -28,18 +29,11 @@ blind = ''
 startingcash = ''
 bet = ''
 
-# place in game variables
-currentplayer = 0
-
 # poker variables
 playercards = np.full([len(playernames), 2, 2], '', dtype='<U10')
 dealercards = np.full([5, 2], '')
-pot = 0
 
 gamenum = 0
-round = 0
-loop = False
-winner = ''
 
 while not done:
   for event in pygame.event.get():
@@ -145,10 +139,17 @@ while not done:
         for j in range(2):
           playercards[i, j] = deck[0]
           deck = deck[1:]
+      playercards = playercards[: i + 1]
       
       for i in range(5):
         dealercards[i] = deck[0]
         deck = deck[1:]
+
+    
+      round = 0
+      loop = False
+      winner = ''
+      currentplayer = 0
 
       screen = 'playerstart'
 
@@ -224,7 +225,7 @@ while not done:
           active[14] = False
   
         if nextbox.collidepoint(event.pos) and (bet != '' or active[13] or active[14]):
-          if len(bet) > 0:
+          if len(bet) > 0 and int(bet) < playercash[currentplayer]:
             playerbets[currentplayer] += int(bet)
             playercash[currentplayer] -= int(bet)
             minbet = int(bet)
@@ -239,6 +240,8 @@ while not done:
           screen = 'playerstart'
 
           if np.sum(playerfold) == len(playernames) - 1:
+            pot += np.sum(playerbets)
+            playerbets = np.zeros(playernames.shape, dtype=int)
             screen = 'whowon'
 
           if currentplayer != len(playernames) - 1:
@@ -275,21 +278,43 @@ while not done:
 
     if screen == 'whowon':
       display.fill((0, 0, 0))
-      display.blit(pygame.font.Font(None, 32).render('who won', True, (255, 255, 255)), (10, 10))
       if np.sum(playerfold) == len(playernames) - 1:
         playercash[playerfold.tolist().index(False)] += pot
         winner = playernames[playerfold.tolist().index(False)]
         screen = 'winner'
       else:
-        print('dealer cards: ' + dealercards[0, 0] + dealercards[0, 1] + ', ' + dealercards[1, 0] + dealercards[1, 1] + ', ' + dealercards[2, 0] + dealercards[2, 1] + ', ' + dealercards[3, 0] + dealercards[3, 1] + ', ' + dealercards[4, 0] + dealercards[4, 1])
+        display.blit(pygame.font.Font(None, 32).render('dealer cards: ' + dealercards[0, 0] + dealercards[0, 1] + ', ' + dealercards[1, 0] + dealercards[1, 1] + ', ' + dealercards[2, 0] + dealercards[2, 1] + ', ' + dealercards[3, 0] + dealercards[3, 1] + ', ' + dealercards[4, 0] + dealercards[4, 1], True, (255, 255, 255)), (10, 10))
         for player, cards in enumerate(playercards):
-          print(playernames[player] + "'s cards: " + cards[0, 0] + cards[0, 1] + ', ' + cards[1, 0] + cards[1, 1])
+          display.blit(pygame.font.Font(None, 32).render(playernames[player] + "'s cards: " + cards[0, 0] + cards[0, 1] + ', ' + cards[1, 0] + cards[1, 1], True, (255, 255, 255)), (10, 45 + player * 40))
 
-      # winner = input('who won? ').strip().lower()
-      # for i, player in enumerate(playernames):
-      #   if winner == player:
-      #     playercash[i] += pot
+        display.blit(pygame.font.Font(None, 32).render('who won?', True, (255, 255, 255)), (200, 325))
+        pygame.draw.rect(display, (255, 255, 255), whowonbox, 2 if active[15] else 1)
+        display.blit(pygame.font.Font(None, 32).render(winner, True, (255, 255, 255)), (whowonbox.x + 5, whowonbox.y + 5))
 
+
+        display.blit(pygame.font.Font(None, 32).render('next', True, (255, 255, 255)), (250, 405))
+        nextgamebox.y = 400
+        pygame.draw.rect(display, (255, 255, 255), nextgamebox, 2)
+
+
+        if event.type == pygame.MOUSEBUTTONDOWN:
+          if whowonbox.collidepoint(event.pos):
+            active[15] = not active[15]
+          else:
+            active[15] = False
+          
+          if nextgamebox.collidepoint(event.pos) and winner in playernames:
+            for i, player in enumerate(playernames):
+              if winner == player:
+                playercash[i] += pot
+
+            screen = 'winner'
+
+        if event.type == pygame.KEYDOWN and active[15]:
+          if event.key == pygame.K_BACKSPACE:
+            winner = winner[:-1]
+          elif len(winner) < 12:
+            winner += event.unicode
 
     if screen == 'winner':
       display.fill((0, 0, 0))
@@ -298,9 +323,13 @@ while not done:
         display.blit(pygame.font.Font(None, 32).render(player + "'s cash: " + str(playercash[i]), True, (255, 255, 255)), (10, 45 + i * 40))
 
       display.blit(pygame.font.Font(None, 32).render('next game', True, (255, 255, 255)), (220, 15))
+      nextgamebox.y = 10
       pygame.draw.rect(display, (255, 255, 255), nextgamebox, 2)
 
 
+      if event.type == pygame.MOUSEBUTTONDOWN:
+        if nextgamebox.collidepoint(event.pos):
+          screen = 'newgame'
 
   pygame.display.flip()
 
