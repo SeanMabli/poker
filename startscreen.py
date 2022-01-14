@@ -12,14 +12,26 @@ plusbox = pygame.Rect(70, 120, 20, 32)
 blindbox = pygame.Rect(200, 40, 150, 32)
 startingcashbox = pygame.Rect(200, 160, 150, 32)
 active = [False for _ in range(12)]
-screen = 'start'
+screen = 'player'
 done = False
 
 # game variables
-playernames = ['' for _ in range(10)]
-blind = ''
+playernames = np.array(['sean', 'zain']) # ['' for _ in range(10)]
+blind = np.array([2, 4]) # ''
 startingcash = ''
-startbox = pygame.Rect(200, 240, 150, 32)
+playercash = np.array([200, 200]) # delete in real game
+startbox = pygame.Rect(50, 195, 250, 32) # pygame.Rect(200, 240, 150, 32)
+
+# place in game variables
+currentplayer = 0
+partofgame = 'startofgame'
+
+# poker variables
+playercards = np.full([len(playernames), 2, 2], '', dtype='<U10')
+dealercards = np.full([5, 2], '')
+
+gamenum = 0
+round = 1
 
 while not done:
   for event in pygame.event.get():
@@ -85,6 +97,7 @@ while not done:
           playernames = np.array(playernames)
           playercash = np.array([int(startingcash)] * len(playernames))
           blind = np.array([int(blind), int(blind) * 2])
+          startbox = pygame.Rect(50, 195, 250, 32)
           screen = 'player'
 
       for x in range(int(plusbox.y / 40 - 1)):
@@ -108,7 +121,58 @@ while not done:
   
     if screen == 'player':
       display.fill((0, 0, 0))
-      
+      if partofgame == 'startofgame':
+        playerbets = np.zeros(playernames.shape, dtype=int)
+        playerbets[0], playerbets[1] = blind[0], blind[1]
+        aliveplayerbets = playerbets
+        playercash -= playerbets
+
+        minbet = blind[1]
+        pot = 0
+
+        playerfold = np.full(len(playernames), False, dtype=bool)
+
+        deck = np.array([['A', 'C'], ['2', 'C'], ['3', 'C'], ['4', 'C'], ['5', 'C'], ['6', 'C'], ['7', 'C'],['8', 'C'], ['9', 'C'], ['10', 'C'], ['J', 'C'], ['Q', 'C'], ['K', 'C'], ['A', 'D'], ['2', 'D'], ['3', 'D'], ['4', 'D'], ['5', 'D'], ['6', 'D'], ['7', 'D'],['8', 'D'], ['9', 'D'], ['10', 'D'], ['J', 'D'], ['Q', 'D'], ['K', 'D'], ['A', 'H'], ['2', 'H'], ['3', 'H'], ['4', 'H'], ['5', 'H'], ['6', 'H'], ['7', 'H'],['8', 'H'], ['9', 'H'], ['10', 'H'], ['J', 'H'], ['Q', 'H'], ['K', 'H'], ['A', 'S'], ['2', 'S'], ['3', 'S'], ['4', 'S'], ['5', 'S'], ['6', 'S'], ['7', 'S'],['8', 'S'], ['9', 'S'], ['10', 'S'], ['J', 'S'], ['Q', 'S'], ['K', 'S']])
+        np.random.shuffle(deck)
+
+        for i in range(len(playernames)):
+          for j in range(2):
+            playercards[i, j] = deck[0]
+            deck = deck[1:]
+        
+        for i in range(5):
+          dealercards[i] = deck[0]
+          deck = deck[1:]
+
+        partofgame = 'turn'
+
+      if partofgame == 'turnscreen':
+        display.blit(pygame.font.Font(None, 32).render("start " + playernames[currentplayer] + "'s turn", True, (255, 255, 255)), (80, 200))
+
+        if event.type == pygame.MOUSEBUTTONDOWN:
+          if startbox.collidepoint(event.pos):
+            partofgame = 'turn'
+
+      if partofgame == 'turn':
+        # player information
+        display.blit(pygame.font.Font(None, 32).render(playernames[currentplayer] + "'s turn", True, (255, 255, 255)), (10, 10))
+        display.blit(pygame.font.Font(None, 32).render('cards: ' + playercards[currentplayer, 0, 0] + playercards[currentplayer, 0, 1] + ', ' + playercards[currentplayer, 1, 0] + playercards[currentplayer, 1, 1], True, (255, 255, 255)), (10, 40))
+        if round == 1:
+          display.blit(pygame.font.Font(None, 32).render('flop: ' + dealercards[0, 0] + dealercards[0, 1] + ', ' + dealercards[1, 0] + dealercards[1, 1] + ', ' + dealercards[2, 0] + dealercards[2, 1], True, (255, 255, 255)), (10, 70))
+        elif round == 2:
+          display.blit(pygame.font.Font(None, 32).render('flop: ' + dealercards[0, 0] + dealercards[0, 1] + ', ' + dealercards[1, 0] + dealercards[1, 1] + ', ' + dealercards[2, 0] + dealercards[2, 1] + ', ' + dealercards[3, 0] + dealercards[3, 1], True, (255, 255, 255)), (10, 70))
+        elif round == 3:
+          display.blit(pygame.font.Font(None, 32).render('flop: ' + dealercards[0, 0] + dealercards[0, 1] + ', ' + dealercards[1, 0] + dealercards[1, 1] + ', ' + dealercards[2, 0] + dealercards[2, 1] + ', ' + dealercards[3, 0] + dealercards[3, 1] + ', ' + dealercards[4, 0] + dealercards[4, 1], True, (255, 255, 255)), (10, 70))
+        if round == 0:
+          display.blit(pygame.font.Font(None, 32).render('cash: ' + str(playercash[currentplayer]), True, (255, 255, 255)), (10, 70))
+          display.blit(pygame.font.Font(None, 32).render('minimum bet: ' + str(minbet), True, (255, 255, 255)), (10, 100))
+          display.blit(pygame.font.Font(None, 32).render('current bet: ' + str(playerbets[currentplayer]), True, (255, 255, 255)), (10, 130))
+        else:
+          display.blit(pygame.font.Font(None, 32).render('cash: ' + str(playercash[currentplayer]), True, (255, 255, 255)), (10, 100))
+          display.blit(pygame.font.Font(None, 32).render('minimum bet: ' + str(minbet), True, (255, 255, 255)), (10, 130))
+          display.blit(pygame.font.Font(None, 32).render('current bet: ' + str(playerbets[currentplayer]), True, (255, 255, 255)), (10, 160))
+
+        
       
 
   pygame.display.flip()
