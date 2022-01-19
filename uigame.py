@@ -24,23 +24,23 @@ active = [False for _ in range(16)]
 screen = 'start'
 done = False
 
+# poker variables
 playernames = ['' for _ in range(10)]
 blind = ''
 startingcash = ''
 bet = ''
 
-# poker variables
 playercards = np.full([len(playernames), 2, 2], '', dtype='<U10')
 dealercards = np.full([5, 2], '')
 
 gamenum = 0
 
 while not done:
-  for event in pygame.event.get():
-    if event.type == pygame.QUIT:
+  for event in pygame.event.get(): # get user imput from pygame
+    if event.type == pygame.QUIT: # check if user closes tab
       done = True
     
-    if screen == 'start':
+    if screen == 'start': # only run if the player is on the start scren
       display.fill((0, 0, 0))
 
       # player names input
@@ -102,6 +102,7 @@ while not done:
           startbox = pygame.Rect(50, 195, 250, 32)
           screen = 'newgame'
 
+      # text box input for player names
       for x in range(int(plusbox.y / 40 - 1)):
         if event.type == pygame.KEYDOWN and active[x]:
           if event.key == pygame.K_BACKSPACE:
@@ -109,19 +110,21 @@ while not done:
           elif len(playernames[x]) < 12:
             playernames[x] += event.unicode.lower()
       
+      # text box input for blind
       if event.type == pygame.KEYDOWN and active[10]:
         if event.key == pygame.K_BACKSPACE:
           blind = blind[:-1]
         elif len(blind) < 12 and event.unicode.isnumeric():
           blind += event.unicode
 
+      # text box input for starting cash
       if event.type == pygame.KEYDOWN and active[11]:
         if event.key == pygame.K_BACKSPACE:
           startingcash = startingcash[:-1]
         elif len(startingcash) < 12 and event.unicode.isnumeric():
           startingcash += event.unicode
   
-    if screen == 'newgame':
+    if screen == 'newgame': # run at the beginning of each game
       playerbets = np.zeros(playernames.shape, dtype=int)
       playerbets[0], playerbets[1] = blind[0], blind[1]
       aliveplayerbets = playerbets
@@ -132,6 +135,7 @@ while not done:
 
       playerfold = np.full(len(playernames), False, dtype=bool)
 
+      # distribute deck to players and dealer
       deck = np.array([['A', 'C'], ['2', 'C'], ['3', 'C'], ['4', 'C'], ['5', 'C'], ['6', 'C'], ['7', 'C'],['8', 'C'], ['9', 'C'], ['10', 'C'], ['J', 'C'], ['Q', 'C'], ['K', 'C'], ['A', 'D'], ['2', 'D'], ['3', 'D'], ['4', 'D'], ['5', 'D'], ['6', 'D'], ['7', 'D'],['8', 'D'], ['9', 'D'], ['10', 'D'], ['J', 'D'], ['Q', 'D'], ['K', 'D'], ['A', 'H'], ['2', 'H'], ['3', 'H'], ['4', 'H'], ['5', 'H'], ['6', 'H'], ['7', 'H'],['8', 'H'], ['9', 'H'], ['10', 'H'], ['J', 'H'], ['Q', 'H'], ['K', 'H'], ['A', 'S'], ['2', 'S'], ['3', 'S'], ['4', 'S'], ['5', 'S'], ['6', 'S'], ['7', 'S'],['8', 'S'], ['9', 'S'], ['10', 'S'], ['J', 'S'], ['Q', 'S'], ['K', 'S']])
       np.random.shuffle(deck)
 
@@ -153,7 +157,7 @@ while not done:
 
       screen = 'playerstart'
 
-    if screen == 'playerstart':
+    if screen == 'playerstart': # a screen to confirm the player
       display.fill((0, 0, 0))
       display.blit(pygame.font.Font(None, 32).render("start " + playernames[currentplayer] + "'s turn", True, (255, 255, 255)), (80, 200))
 
@@ -161,7 +165,7 @@ while not done:
         if startbox.collidepoint(event.pos):
           screen = 'playerturn'
 
-    if screen == 'playerturn':
+    if screen == 'playerturn': # this screen gives the player information about the game
       display.fill((0, 0, 0))
       # player information
       display.blit(pygame.font.Font(None, 32).render(playernames[currentplayer] + "'s turn", True, (255, 255, 255)), (10, 10))
@@ -225,6 +229,7 @@ while not done:
           active[14] = False
   
         if nextbox.collidepoint(event.pos) and (bet != '' or active[13] or active[14]):
+          # at the end of this turn this script runs to make adjustments to the money variables
           if len(bet) > 0 and int(bet) < playercash[currentplayer]:
             playerbets[currentplayer] += int(bet)
             playercash[currentplayer] -= int(bet)
@@ -276,7 +281,7 @@ while not done:
         elif len(bet) < 6 and event.unicode.isnumeric():
           bet += event.unicode
 
-    if screen == 'whowon':
+    if screen == 'whowon': # since i couldn't figure out who won with a script this script asks the player who won
       display.fill((0, 0, 0))
       if np.sum(playerfold) == len(playernames) - 1:
         playercash[playerfold.tolist().index(False)] += pot
@@ -316,7 +321,7 @@ while not done:
           elif len(winner) < 12:
             winner += event.unicode
 
-    if screen == 'winner':
+    if screen == 'winner': # this displays the winner, current player cash and starts the next game
       display.fill((0, 0, 0))
       display.blit(pygame.font.Font(None, 32).render(winner + ' won', True, (255, 255, 255)), (10, 10))
       for i, player in enumerate(playernames):
